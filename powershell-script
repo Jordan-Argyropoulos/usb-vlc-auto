@@ -1,0 +1,31 @@
+# Replace "E:" with the letter of your USB drive
+$drive = "E:"
+$vlcPath = "C:\Program Files\VideoLAN\VLC\vlc.exe" # Replace with path to VLC
+
+# Function to check if a USB stick is connected
+function Test-UsbDrive {
+    param(
+        [string]$driveLetter
+    )
+
+    $drives = Get-WmiObject Win32_LogicalDisk | Where-Object {$_.VolumeName -eq $driveLetter}
+    return $drives
+}
+
+# Function to launch VLC with all video files from a USB stick
+function Play-Videos {
+    param(
+        [string]$driveLetter,
+        [string]$vlcPath
+    )
+
+    $files = Get-ChildItem "$driveLetter:\*.mp4","$driveLetter:\*.avi","$driveLetter:\*.mkv"
+    foreach ($file in $files) {
+        Start-Process -FilePath $vlcPath -ArgumentList $file.FullName
+    }
+}
+
+# Check if the USB stick is connected and launch VLC if it is
+if (Test-UsbDrive $drive) {
+    Play-Videos $drive $vlcPath
+}
